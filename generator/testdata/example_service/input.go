@@ -5,5 +5,6 @@ import (
 )
 
 type Example interface {
-	Hello(ctx context.Context)
+	NoResponse(ctx context.Context) error
+	WithResponse(ctx context.Context) (*string, error)
 }

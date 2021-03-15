@@ -27,24 +27,56 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
-func (c *ExampleClient) Hello(ctx context.Context) {
+func (c *ExampleClient) NoResponse(ctx context.Context) error {
 	content := &client.DataContent{ContentType: "application/json"}
-	c.cc.InvokeMethodWithContent(ctx, c.appID, "Hello", "post", content)
-	return
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "NoResponse", "post", content)
+	return err
 }
 
-func _Example_Hello_Handler(srv Example) InvocationHandlerFunc {
+func _Example_NoResponse_Handler(srv Example) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
-		srv.Hello(ctx)
 		out = &common.Content{
 			ContentType: "application/json",
 		}
+		err := srv.NoResponse(ctx)
+		return
+	}
+}
+
+func (c *ExampleClient) WithResponse(ctx context.Context) (*string, error) {
+	content := &client.DataContent{ContentType: "application/json"}
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "WithResponse", "post", content)
+	var out *string
+	err := json.Unmarshal(resp, out)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func _Example_WithResponse_Handler(srv Example) InvocationHandlerFunc {
+	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		out = &common.Content{
+			ContentType: "application/json",
+		}
+		resp, methodErr := srv.WithResponse(ctx)
+		if methodErr != nil {
+			err = methodErr
+			return
+		}
+		data, encErr := json.Marshal(resp)
+		if encErr != nil {
+			err = encErr
+			return
+		}
+		out.Data = data
 		return
 	}
 }
 
 func Register(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("Hello", _Example_Hello_Handler(srv))
+	s.AddServiceInvocationHandler("NoResponse", _Example_NoResponse_Handler(srv))
+	s.AddServiceInvocationHandler("WithResponse", _Example_WithResponse_Handler(srv))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {

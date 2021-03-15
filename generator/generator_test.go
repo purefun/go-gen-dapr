@@ -45,6 +45,12 @@ func TestGenerator_Generate(t *testing.T) {
 			err:  ErrNoCtxParam,
 		},
 		{
+			name: "invalid results",
+			g:    g("invalid_results", "Service"),
+			path: "./testdata/invalid_results",
+			err:  ErrInvalidResults,
+		},
+		{
 			name: "example service",
 			g:    g("example_service", "Example"),
 			path: "./testdata/example_service",

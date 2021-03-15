@@ -14,18 +14,42 @@ func New{{.ServiceName}}Client(appID string) (*{{.ServiceName}}Client, error) {
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
 {{range .Methods}}
-func (c *{{$.ServiceName}}Client) {{.Name}}(ctx context.Context) {
-	content := &client.DataContent{ContentType: "application/json"}
-	c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
-	return
+func (c *{{$.ServiceName}}Client) {{.Name}}(ctx context.Context) ({{if .Response}}{{.Response.Type}},{{end}}error) {
+    content := &client.DataContent{ContentType: "application/json"}
+    {{- if .Response}}
+    resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
+    var out {{.Response.Type}}
+    err := json.Unmarshal(resp, out)
+    if err != nil {
+        return nil, err
+    }
+    return out, nil
+    {{- else}}
+    _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
+    return err
+    {{- end}}
 }
 
 func _{{$.ServiceName}}_{{.Name}}_Handler(srv {{$.ServiceName}}) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
-		srv.{{.Name}}(ctx)
 		out = &common.Content{
 			ContentType: "application/json",
 		}
+        {{- if .Response}}
+        resp, methodErr := srv.{{.Name}}(ctx)
+        if methodErr != nil {
+            err = methodErr
+            return
+        }
+        data, encErr := json.Marshal(resp)
+        if encErr != nil {
+            err = encErr
+            return
+        }
+        out.Data = data
+        {{- else}}
+		err := srv.{{.Name}}(ctx)
+        {{- end}}
 		return
 	}
 }
