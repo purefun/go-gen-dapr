@@ -1,0 +1,7 @@
+{{- if .Imports}}
+import (
+	{{- range $pkg, $alias := .Imports}}
+	{{if $alias}}{{$alias}}{{end}} "{{$pkg}}"
+	{{- end}}
+)
+{{end -}}
