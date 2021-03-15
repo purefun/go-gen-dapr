@@ -154,14 +154,16 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 	sig, _ := m.Type().(*types.Signature)
 
 	params := sig.Params()
-	if params.Len() == 0 {
+	if !g.validateParams(params) {
 		return fmt.Errorf("%w, method: %s", ErrNoCtxParam, name)
 	}
-	if p := params.At(0); p.Type().String() != "context.Context" {
-		return fmt.Errorf("%w, method: %s", ErrNoCtxParam, name)
-	}
-	for i := 0; i < params.Len(); i++ {
-		// p := params.At(i)
+	// skip the first param: ctx context.Context
+	for i := 1; i < params.Len(); i++ {
+		p := params.At(i)
+		method.Params = append(method.Params, &Param{
+			Name: p.Name(),
+			Type: p.Type().String(),
+		})
 	}
 
 	results := sig.Results()
@@ -174,6 +176,10 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 
 	g.Methods = append(g.Methods, method)
 	return nil
+}
+
+func (g *Generator) validateParams(ps *types.Tuple) bool {
+	return ps.Len() > 0 && ps.At(0).Type().String() == "context.Context"
 }
 
 func (g *Generator) validateResults(rs *types.Tuple) bool {
@@ -212,6 +218,7 @@ func (g *Generator) genImports() (string, error) {
 func (g *Generator) genService() (string, error) {
 	g.AddImport("context", "")
 	g.AddImport("encoding/json", "")
+	g.AddImport("fmt", "")
 	g.AddImport("github.com/dapr/go-sdk/client", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 	g.AddImport("github.com/dapr/go-sdk/service/grpc", "")

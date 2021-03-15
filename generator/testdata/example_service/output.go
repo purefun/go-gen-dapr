@@ -7,6 +7,7 @@ package example_service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"
@@ -38,7 +39,99 @@ func _Example_NoResponse_Handler(srv Example) InvocationHandlerFunc {
 		out = &common.Content{
 			ContentType: "application/json",
 		}
-		err := srv.NoResponse(ctx)
+		methodErr := srv.NoResponse(ctx)
+		if methodErr != nil {
+			err = methodErr
+			return
+		}
+		return
+	}
+}
+
+func (c *ExampleClient) Param(ctx context.Context, in string) error {
+	content := &client.DataContent{ContentType: "application/json"}
+	params, encErr := json.Marshal([]interface{}{
+		{Name: "in", Value: in},
+	})
+	if encErr != nil {
+		return nil
+	}
+	content.Data = params
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Param", "post", content)
+	return err
+}
+
+func _Example_Param_Handler(srv Example) InvocationHandlerFunc {
+	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		out = &common.Content{
+			ContentType: "application/json",
+		}
+		var params *[]interface{}
+		decErr := json.Unmarshal(in.Data, params)
+		if decErr != nil {
+			err = decErr
+			return
+		}
+		_in, ok := (*params)[0].(string)
+		if !ok {
+			err = fmt.Errorf(`param "in" type is not "string"`)
+			return
+		}
+		methodErr := srv.Param(ctx, _in)
+		if methodErr != nil {
+			err = methodErr
+			return
+		}
+		return
+	}
+}
+
+func (c *ExampleClient) Params(ctx context.Context, a string, b string, c string) error {
+	content := &client.DataContent{ContentType: "application/json"}
+	params, encErr := json.Marshal([]interface{}{
+		{Name: "a", Value: a},
+		{Name: "b", Value: b},
+		{Name: "c", Value: c},
+	})
+	if encErr != nil {
+		return nil
+	}
+	content.Data = params
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Params", "post", content)
+	return err
+}
+
+func _Example_Params_Handler(srv Example) InvocationHandlerFunc {
+	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		out = &common.Content{
+			ContentType: "application/json",
+		}
+		var params *[]interface{}
+		decErr := json.Unmarshal(in.Data, params)
+		if decErr != nil {
+			err = decErr
+			return
+		}
+		_a, ok := (*params)[0].(string)
+		if !ok {
+			err = fmt.Errorf(`param "a" type is not "string"`)
+			return
+		}
+		_b, ok := (*params)[1].(string)
+		if !ok {
+			err = fmt.Errorf(`param "b" type is not "string"`)
+			return
+		}
+		_c, ok := (*params)[2].(string)
+		if !ok {
+			err = fmt.Errorf(`param "c" type is not "string"`)
+			return
+		}
+		methodErr := srv.Params(ctx, _a, _b, _c)
+		if methodErr != nil {
+			err = methodErr
+			return
+		}
 		return
 	}
 }
@@ -76,6 +169,8 @@ func _Example_WithResponse_Handler(srv Example) InvocationHandlerFunc {
 
 func Register(s common.Service, srv Example) {
 	s.AddServiceInvocationHandler("NoResponse", _Example_NoResponse_Handler(srv))
+	s.AddServiceInvocationHandler("Param", _Example_Param_Handler(srv))
+	s.AddServiceInvocationHandler("Params", _Example_Params_Handler(srv))
 	s.AddServiceInvocationHandler("WithResponse", _Example_WithResponse_Handler(srv))
 }
 
