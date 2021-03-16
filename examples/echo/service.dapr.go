@@ -2,7 +2,7 @@
 // version: v0.1.0
 // source:  github.com/purefun/go-gen-dapr/examples/echo.Service
 
-package echo
+package main
 
 import (
 	"context"
@@ -25,17 +25,13 @@ func NewServiceClient(appID string) (*ServiceClient, error) {
 	return &ServiceClient{cc, appID}, nil
 }
 
-func (c *ServiceClient) Echo(ctx context.Context, in Message) (*Message, error) {
+func (c *ServiceClient) Echo(ctx context.Context) (*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
-	params, encErr := json.Marshal(map[string]interface{}{
-		"in": in,
-	})
-	if encErr != nil {
-		return nil, encErr
-	}
-	content.Data = params
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Echo", "post", content)
-	var out Message
+	if err != nil {
+		return nil, err
+	}
+	var out string
 	err = json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, err
@@ -44,6 +40,47 @@ func (c *ServiceClient) Echo(ctx context.Context, in Message) (*Message, error) 
 }
 
 func _Service_Echo_Handler(srv Service) InvocationHandlerFunc {
+	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		out = &common.Content{
+			ContentType: "application/json",
+		}
+		resp, methodErr := srv.Echo(ctx)
+		if methodErr != nil {
+			err = methodErr
+			return
+		}
+		data, encErr := json.Marshal(resp)
+		if encErr != nil {
+			err = encErr
+			return
+		}
+		out.Data = data
+		return
+	}
+}
+
+func (c *ServiceClient) Hello(ctx context.Context, in Message) (*Message, error) {
+	content := &client.DataContent{ContentType: "application/json"}
+	params, encErr := json.Marshal(map[string]interface{}{
+		"in": in,
+	})
+	if encErr != nil {
+		return nil, encErr
+	}
+	content.Data = params
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Hello", "post", content)
+	if err != nil {
+		return nil, err
+	}
+	var out Message
+	err = json.Unmarshal(resp, &out)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func _Service_Hello_Handler(srv Service) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
@@ -57,7 +94,7 @@ func _Service_Echo_Handler(srv Service) InvocationHandlerFunc {
 			err = decErr
 			return
 		}
-		resp, methodErr := srv.Echo(ctx, params.In)
+		resp, methodErr := srv.Hello(ctx, params.In)
 		if methodErr != nil {
 			err = methodErr
 			return
@@ -76,6 +113,7 @@ type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent)
 
 func Register(s common.Service, srv Service) {
 	s.AddServiceInvocationHandler("Echo", _Service_Echo_Handler(srv))
+	s.AddServiceInvocationHandler("Hello", _Service_Hello_Handler(srv))
 }
 
 func NewServiceServer(address string, srv Service) (common.Service, error) {

@@ -1,4 +1,4 @@
-package echo
+package main
 
 import "context"
 
@@ -7,5 +7,6 @@ type Message struct {
 }
 
 type Service interface {
-	Echo(ctx context.Context, in Message) (*Message, error)
+	Echo(ctx context.Context) (*string, error)
+	Hello(ctx context.Context, in Message) (*Message, error)
 }
