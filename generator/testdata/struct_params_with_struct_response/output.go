@@ -3,7 +3,6 @@ package struct_params_with_struct_response
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"
@@ -29,16 +28,16 @@ func (c *ExampleClient) Method(ctx context.Context, a Input, b *Input) (*Output,
 		"b": b,
 	})
 	if encErr != nil {
-		return encErr
+		return nil, encErr
 	}
 	content.Data = params
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
 	var out Output
-	err := json.Unmarshal(resp, &out)
+	err = json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	return &out, nil
 }
 
 func _Example_Method_Handler(srv Example) InvocationHandlerFunc {

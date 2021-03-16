@@ -30,7 +30,6 @@ var (
 )
 
 type Options struct {
-	PackageName string
 	ServicePkg  string
 	ServiceType string
 	GenComment  bool
@@ -44,7 +43,6 @@ type Id struct {
 func NewGenerator(o Options) *Generator {
 	return &Generator{
 		Version:     Version,
-		PackageName: o.PackageName,
 		ServicePkg:  o.ServicePkg,
 		ServiceType: o.ServiceType,
 		GenComment:  o.GenComment,
@@ -70,11 +68,10 @@ type Method struct {
 type Generator struct {
 	Version    string
 	SourceType string
-	Packages   []*packages.Package
+	Package    *packages.Package
 
-	ServiceId   string // pkg.Name
-	ServicePkg  string // package of ServiceId
-	ServiceType string // name of ServiceId
+	ServicePkg  string
+	ServiceType string
 
 	PackageName string // package {{.PackageName}}
 	GenComment  bool
@@ -83,11 +80,10 @@ type Generator struct {
 }
 
 func (g *Generator) Generate() (string, error) {
-	pkgs, err := packages.Load(&packages.Config{Mode: LoadMode}, g.ServicePkg)
+	err := g.LoadSource()
 	if err != nil {
-		return "", err
+		return "", nil
 	}
-	g.Packages = pkgs
 
 	err = g.Build()
 	if err != nil {
@@ -120,12 +116,22 @@ func (g *Generator) Generate() (string, error) {
 	return string(formatted), nil
 }
 
+func (g *Generator) LoadSource() error {
+	pkgs, err := packages.Load(&packages.Config{Mode: LoadMode}, g.ServicePkg)
+	if err != nil {
+		return err
+	}
+	pkg := pkgs[0]
+	g.Package = pkg
+	g.PackageName = pkg.Name
+
+	return nil
+}
+
 func (g *Generator) Build() error {
 	var s types.Object
 
-	for _, pkg := range g.Packages {
-		s = pkg.Types.Scope().Lookup(g.ServiceType)
-	}
+	s = g.Package.Types.Scope().Lookup(g.ServiceType)
 
 	if s == nil {
 		return fmt.Errorf("%w, name: %s", ErrServiceNotFound, g.ServiceType)
@@ -192,7 +198,7 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 func (g *Generator) typeName(t types.Type) string {
 	return types.TypeString(t, func(p *types.Package) string {
 		pkg := p.Path()
-		if pkg != g.ServicePkg {
+		if pkg != g.Package.PkgPath {
 			g.AddImport(p.Path(), "")
 			return filepath.Base(pkg)
 		}
@@ -241,7 +247,6 @@ func (g *Generator) genImports() (string, error) {
 func (g *Generator) genService() (string, error) {
 	g.AddImport("context", "")
 	g.AddImport("encoding/json", "")
-	g.AddImport("fmt", "")
 	g.AddImport("github.com/dapr/go-sdk/client", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 	g.AddImport("github.com/dapr/go-sdk/service/grpc", "")

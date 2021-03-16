@@ -3,15 +3,17 @@ package cli
 import (
 	"flag"
 	"fmt"
-	"github.com/purefun/go-gen-dapr/generator"
+	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/purefun/go-gen-dapr/generator"
 )
 
 var (
 	pkg      string
-	pkgValue string = "."
-	pkgUsage string = "the package contains the type"
+	pkgValue = "."
+	pkgUsage = "the package contains the type"
 )
 
 func usage() {
@@ -37,7 +39,6 @@ func Execute() {
 	typeName := args[0]
 
 	g := generator.NewGenerator(generator.Options{
-		PackageName: "echo",
 		ServicePkg:  pkg,
 		ServiceType: typeName,
 		GenComment:  true,
@@ -49,5 +50,8 @@ func Execute() {
 		log.Fatal(err)
 	}
 
-	fmt.Println(out)
+	err = ioutil.WriteFile(pkg+"/service.dapr.go", []byte(out), 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

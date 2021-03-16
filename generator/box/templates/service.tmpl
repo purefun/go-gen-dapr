@@ -21,18 +21,18 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
         {{- end}}
 	})
 	if encErr != nil {
-      return encErr
+      return {{if .Response}}nil ,{{end}}encErr
 	}
 	content.Data = params
     {{- end}}
     {{- if .Response}}
     resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
     var out {{trimPrefix .Response.Type "*"}}
-    err := json.Unmarshal(resp, &out)
+    err = json.Unmarshal(resp, &out)
     if err != nil {
         return nil, err
     }
-    return out, nil
+    return &out, nil
     {{- else}}
     _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
     return err

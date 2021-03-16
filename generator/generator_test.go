@@ -1,14 +1,22 @@
 package generator
 
 import (
+	"flag"
 	"io/ioutil"
-	"path/filepath"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var snapshot bool
+
+func TestMain(m *testing.M) {
+	flag.BoolVar(&snapshot, "snapshot", false, "")
+	os.Exit(m.Run())
+}
 
 func TestGenerator_Generate(t *testing.T) {
 	tests := []struct {
@@ -83,7 +91,6 @@ func TestGenerator_Generate(t *testing.T) {
 			pkg := "github.com/purefun/go-gen-dapr/generator/" + strings.TrimPrefix(tt.path, "./")
 
 			g := NewGenerator(Options{
-				PackageName: filepath.Base(pkg),
 				ServicePkg:  pkg,
 				ServiceType: tt.iface,
 				GenComment:  false,
@@ -98,11 +105,18 @@ func TestGenerator_Generate(t *testing.T) {
 				return
 			}
 
-			outContent, err := ioutil.ReadFile(tt.path + "/output.go")
+			outFile := tt.path + "/output.go"
+
+			outContent, err := ioutil.ReadFile(outFile)
 			require.NoError(t, err)
 
 			want := string(outContent)
 			assert.Equal(t, want, got)
+
+			if want != got && snapshot {
+				err := ioutil.WriteFile(outFile, []byte(got), 0644)
+				require.NoError(t, err)
+			}
 
 		})
 	}

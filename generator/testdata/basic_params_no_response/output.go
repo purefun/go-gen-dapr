@@ -3,7 +3,6 @@ package basic_params_no_response
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"

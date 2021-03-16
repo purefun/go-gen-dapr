@@ -3,7 +3,6 @@ package no_param_with_basic_response
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"
@@ -26,11 +25,11 @@ func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
 	var out string
-	err := json.Unmarshal(resp, &out)
+	err = json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	return &out, nil
 }
 
 func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
