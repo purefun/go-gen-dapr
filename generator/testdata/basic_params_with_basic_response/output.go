@@ -32,6 +32,9 @@ func (c *ExampleClient) Method(ctx context.Context, a string, b string) (*string
 	}
 	content.Data = params
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	if err != nil {
+		return nil, err
+	}
 	var out string
 	err = json.Unmarshal(resp, &out)
 	if err != nil {

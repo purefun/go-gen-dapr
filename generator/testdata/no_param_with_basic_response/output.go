@@ -24,6 +24,9 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	if err != nil {
+		return nil, err
+	}
 	var out string
 	err = json.Unmarshal(resp, &out)
 	if err != nil {
