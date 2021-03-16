@@ -10,6 +10,7 @@ var funcs = template.FuncMap{
 	"upper":       upper,
 	"upperFirst":  upperFirst,
 	"prefixLines": prefixLines,
+	"trimPrefix":  strings.TrimPrefix,
 }
 
 func upper(s string) string {

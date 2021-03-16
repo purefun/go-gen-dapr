@@ -30,15 +30,23 @@ var (
 
 type Options struct {
 	PackageName string
-	ServiceName string
+	ServicePkg  string
+	ServiceType string
 	GenComment  bool
+}
+
+type Id struct {
+	Pkg  string
+	Name string
 }
 
 func NewGenerator(o Options) *Generator {
 	return &Generator{
 		Version:     Version,
 		PackageName: o.PackageName,
-		ServiceName: o.ServiceName,
+		ServicePkg:  o.ServicePkg,
+		ServiceType: o.ServiceType,
+		GenComment:  o.GenComment,
 		Imports:     make(map[string]string),
 	}
 }
@@ -59,18 +67,28 @@ type Method struct {
 }
 
 type Generator struct {
-	Version     string
-	SourceType  string
-	Packages    []*packages.Package
-	ServiceName string
-	PackageName string
+	Version    string
+	SourceType string
+	Packages   []*packages.Package
+
+	ServiceId   string // pkg.Name
+	ServicePkg  string // package of ServiceId
+	ServiceType string // name of ServiceId
+
+	PackageName string // package {{.PackageName}}
 	GenComment  bool
 	Imports     map[string]string // package->alias
 	Methods     []*Method
 }
 
 func (g *Generator) Generate() (string, error) {
-	err := g.Build()
+	pkgs, err := packages.Load(&packages.Config{Mode: LoadMode}, g.ServicePkg)
+	if err != nil {
+		return "", err
+	}
+	g.Packages = pkgs
+
+	err = g.Build()
 	if err != nil {
 		return "", err
 	}
@@ -101,24 +119,15 @@ func (g *Generator) Generate() (string, error) {
 	return string(formatted), nil
 }
 
-func (g *Generator) Load(cfg *packages.Config, patterns string) error {
-	pkgs, err := packages.Load(cfg, patterns)
-	if err != nil {
-		return err
-	}
-	g.Packages = pkgs
-	return nil
-}
-
 func (g *Generator) Build() error {
 	var s types.Object
 
 	for _, pkg := range g.Packages {
-		s = pkg.Types.Scope().Lookup(g.ServiceName)
+		s = pkg.Types.Scope().Lookup(g.ServiceType)
 	}
 
 	if s == nil {
-		return fmt.Errorf("%w, name: %s", ErrServiceNotFound, g.ServiceName)
+		return fmt.Errorf("%w, name: %s", ErrServiceNotFound, g.ServiceType)
 	}
 
 	iface, ok := s.Type().Underlying().(*types.Interface)
@@ -162,7 +171,7 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 		p := params.At(i)
 		method.Params = append(method.Params, &Param{
 			Name: p.Name(),
-			Type: p.Type().String(),
+			Type: g.typeName(p.Type()),
 		})
 	}
 
@@ -170,12 +179,23 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 	if !g.validateResults(results) {
 		return fmt.Errorf("%w, name: %s", ErrInvalidResults, name)
 	}
+	// validateResults makes sure that the results len is 1 or 2
 	if results.Len() == 2 {
-		method.Response = &Response{Type: results.At(0).Type().String()}
+		method.Response = &Response{Type: g.typeName(results.At(0).Type())}
 	}
 
 	g.Methods = append(g.Methods, method)
 	return nil
+}
+
+func (g *Generator) typeName(t types.Type) string {
+	return types.TypeString(t, func(p *types.Package) string {
+		pkg := p.Path()
+		if pkg != g.ServicePkg {
+			g.AddImport(p.Path(), "")
+		}
+		return ""
+	})
 }
 
 func (g *Generator) validateParams(ps *types.Tuple) bool {

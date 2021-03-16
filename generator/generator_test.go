@@ -8,75 +8,81 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/tools/go/packages"
 )
 
 func TestGenerator_Generate(t *testing.T) {
 	tests := []struct {
-		name string
-		s    string
-		path string
-		err  error
+		name  string
+		iface string
+		path  string
+		err   error
 	}{
 		{
-			name: "no service",
-			s:    "InvalidService",
-			path: "./testdata/no_service",
-			err:  ErrServiceNotFound,
+			name:  "no service",
+			iface: "InvalidService",
+			path:  "./testdata/no_service",
+			err:   ErrServiceNotFound,
 		},
 		{
-			name: "empty service",
-			s:    "InvalidService",
-			path: "./testdata/empty_service",
-			err:  ErrEmptyService,
+			name:  "empty service",
+			iface: "InvalidService",
+			path:  "./testdata/empty_service",
+			err:   ErrEmptyService,
 		},
 		{
-			name: "not an interface",
-			s:    "InvalidService",
-			path: "./testdata/not_interface",
-			err:  ErrNotInterface,
+			name:  "not an interface",
+			iface: "InvalidService",
+			path:  "./testdata/not_interface",
+			err:   ErrNotInterface,
 		},
 		{
-			name: "first param should be context.Context",
-			s:    "InvalidService",
-			path: "./testdata/no_ctx_param",
-			err:  ErrNoCtxParam,
+			name:  "first param should be context.Context",
+			iface: "InvalidService",
+			path:  "./testdata/no_ctx_param",
+			err:   ErrNoCtxParam,
 		},
 		{
-			name: "invalid results",
-			s:    "InvalidService",
-			path: "./testdata/invalid_results",
-			err:  ErrInvalidResults,
+			name:  "invalid results",
+			iface: "InvalidService",
+			path:  "./testdata/invalid_results",
+			err:   ErrInvalidResults,
 		},
 		{
-			name: "no param no response",
-			s:    "Example",
-			path: "./testdata/no_param_no_response",
+			name:  "no param no response",
+			iface: "Example",
+			path:  "./testdata/no_param_no_response",
 		},
 		{
-			name: "basic type params no response",
-			s:    "Example",
-			path: "./testdata/basic_params_no_response",
+			name:  "basic type params no response",
+			iface: "Example",
+			path:  "./testdata/basic_params_no_response",
 		},
 		{
-			name: "no param with basic type response",
-			s:    "Example",
-			path: "./testdata/no_param_with_basic_response",
+			name:  "no param with basic type response",
+			iface: "Example",
+			path:  "./testdata/no_param_with_basic_response",
 		},
 		{
-			name: "basic type params with basic response",
-			s:    "Example",
-			path: "./testdata/basic_params_with_basic_response",
+			name:  "basic params with basic response",
+			iface: "Example",
+			path:  "./testdata/basic_params_with_basic_response",
+		},
+		{
+			name:  "struct params with struct response",
+			iface: "Example",
+			path:  "./testdata/struct_params_with_struct_response",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			pkg := "github.com/purefun/go-gen-dapr/generator/" + strings.TrimPrefix(tt.path, "./")
 
-			g := NewGenerator(Options{PackageName: filepath.Base(pkg), ServiceName: tt.s})
-
-			err := g.Load(&packages.Config{Mode: LoadMode}, pkg)
-			require.NoError(t, err)
+			g := NewGenerator(Options{
+				PackageName: filepath.Base(pkg),
+				ServicePkg:  pkg,
+				ServiceType: tt.iface,
+				GenComment:  false,
+			})
 
 			got, err := g.Generate()
 

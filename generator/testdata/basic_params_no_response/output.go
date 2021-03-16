@@ -24,12 +24,12 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 
 func (c *ExampleClient) Method(ctx context.Context, a string, b string) error {
 	content := &client.DataContent{ContentType: "application/json"}
-	params, encErr := json.Marshal([]interface{}{
-		{Name: "a", Value: a},
-		{Name: "b", Value: b},
+	params, encErr := json.Marshal(map[string]interface{}{
+		"a": a,
+		"b": b,
 	})
 	if encErr != nil {
-		return nil
+		return encErr
 	}
 	content.Data = params
 	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
@@ -41,23 +41,17 @@ func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 		out = &common.Content{
 			ContentType: "application/json",
 		}
-		var params *[]interface{}
-		decErr := json.Unmarshal(in.Data, params)
+		type Params struct {
+			A string
+			B string
+		}
+		var params Params
+		decErr := json.Unmarshal(in.Data, &params)
 		if decErr != nil {
 			err = decErr
 			return
 		}
-		_a, ok := (*params)[0].(string)
-		if !ok {
-			err = fmt.Errorf(`param "a" type is not "string"`)
-			return
-		}
-		_b, ok := (*params)[1].(string)
-		if !ok {
-			err = fmt.Errorf(`param "b" type is not "string"`)
-			return
-		}
-		methodErr := srv.Method(ctx, _a, _b)
+		methodErr := srv.Method(ctx, params.A, params.B)
 		if methodErr != nil {
 			err = methodErr
 			return

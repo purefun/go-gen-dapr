@@ -1,4 +1,4 @@
-package basic_params_with_basic_response
+package struct_params_with_struct_response
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) Method(ctx context.Context, a string, b string) (*string, error) {
+func (c *ExampleClient) Method(ctx context.Context, a Input, b *Input) (*Output, error) {
 	content := &client.DataContent{ContentType: "application/json"}
 	params, encErr := json.Marshal(map[string]interface{}{
 		"a": a,
@@ -33,7 +33,7 @@ func (c *ExampleClient) Method(ctx context.Context, a string, b string) (*string
 	}
 	content.Data = params
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
-	var out string
+	var out Output
 	err := json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, err
@@ -47,8 +47,8 @@ func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 			ContentType: "application/json",
 		}
 		type Params struct {
-			A string
-			B string
+			A Input
+			B *Input
 		}
 		var params Params
 		decErr := json.Unmarshal(in.Data, &params)
