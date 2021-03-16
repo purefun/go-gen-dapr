@@ -1,4 +1,4 @@
-package no_param_with_response
+package basic_params_with_basic_response
 
 import (
 	"context"
@@ -22,9 +22,17 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) NoParamWithResponse(ctx context.Context) (*string, error) {
+func (c *ExampleClient) Method(ctx context.Context, a string, b string) (*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "NoParamWithResponse", "post", content)
+	params, encErr := json.Marshal([]interface{}{
+		{Name: "a", Value: a},
+		{Name: "b", Value: b},
+	})
+	if encErr != nil {
+		return nil
+	}
+	content.Data = params
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
 	var out *string
 	err := json.Unmarshal(resp, out)
 	if err != nil {
@@ -33,12 +41,28 @@ func (c *ExampleClient) NoParamWithResponse(ctx context.Context) (*string, error
 	return out, nil
 }
 
-func _Example_NoParamWithResponse_Handler(srv Example) InvocationHandlerFunc {
+func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
 		}
-		resp, methodErr := srv.NoParamWithResponse(ctx)
+		var params *[]interface{}
+		decErr := json.Unmarshal(in.Data, params)
+		if decErr != nil {
+			err = decErr
+			return
+		}
+		_a, ok := (*params)[0].(string)
+		if !ok {
+			err = fmt.Errorf(`param "a" type is not "string"`)
+			return
+		}
+		_b, ok := (*params)[1].(string)
+		if !ok {
+			err = fmt.Errorf(`param "b" type is not "string"`)
+			return
+		}
+		resp, methodErr := srv.Method(ctx, _a, _b)
 		if methodErr != nil {
 			err = methodErr
 			return
@@ -56,7 +80,7 @@ func _Example_NoParamWithResponse_Handler(srv Example) InvocationHandlerFunc {
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
 func Register(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("NoParamWithResponse", _Example_NoParamWithResponse_Handler(srv))
+	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {

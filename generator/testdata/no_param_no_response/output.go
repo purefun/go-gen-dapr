@@ -22,18 +22,18 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) NoParamNoResponse(ctx context.Context) error {
+func (c *ExampleClient) Method(ctx context.Context) error {
 	content := &client.DataContent{ContentType: "application/json"}
-	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "NoParamNoResponse", "post", content)
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
 	return err
 }
 
-func _Example_NoParamNoResponse_Handler(srv Example) InvocationHandlerFunc {
+func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
 		}
-		methodErr := srv.NoParamNoResponse(ctx)
+		methodErr := srv.Method(ctx)
 		if methodErr != nil {
 			err = methodErr
 			return
@@ -45,7 +45,7 @@ func _Example_NoParamNoResponse_Handler(srv Example) InvocationHandlerFunc {
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
 func Register(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("NoParamNoResponse", _Example_NoParamNoResponse_Handler(srv))
+	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {

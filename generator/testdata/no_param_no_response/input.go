@@ -5,5 +5,5 @@ import (
 )
 
 type Example interface {
-	NoParamNoResponse(ctx context.Context) error
+	Method(ctx context.Context) error
 }

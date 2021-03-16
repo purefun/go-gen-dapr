@@ -1,4 +1,4 @@
-package params_no_response
+package no_param_with_basic_response
 
 import (
 	"context"
@@ -22,46 +22,33 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) ParamsNoResponse(ctx context.Context, a string, b string) error {
+func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
-	params, encErr := json.Marshal([]interface{}{
-		{Name: "a", Value: a},
-		{Name: "b", Value: b},
-	})
-	if encErr != nil {
-		return nil
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	var out *string
+	err := json.Unmarshal(resp, out)
+	if err != nil {
+		return nil, err
 	}
-	content.Data = params
-	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "ParamsNoResponse", "post", content)
-	return err
+	return out, nil
 }
 
-func _Example_ParamsNoResponse_Handler(srv Example) InvocationHandlerFunc {
+func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
 		}
-		var params *[]interface{}
-		decErr := json.Unmarshal(in.Data, params)
-		if decErr != nil {
-			err = decErr
-			return
-		}
-		_a, ok := (*params)[0].(string)
-		if !ok {
-			err = fmt.Errorf(`param "a" type is not "string"`)
-			return
-		}
-		_b, ok := (*params)[1].(string)
-		if !ok {
-			err = fmt.Errorf(`param "b" type is not "string"`)
-			return
-		}
-		methodErr := srv.ParamsNoResponse(ctx, _a, _b)
+		resp, methodErr := srv.Method(ctx)
 		if methodErr != nil {
 			err = methodErr
 			return
 		}
+		data, encErr := json.Marshal(resp)
+		if encErr != nil {
+			err = encErr
+			return
+		}
+		out.Data = data
 		return
 	}
 }
@@ -69,7 +56,7 @@ func _Example_ParamsNoResponse_Handler(srv Example) InvocationHandlerFunc {
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
 func Register(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("ParamsNoResponse", _Example_ParamsNoResponse_Handler(srv))
+	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {

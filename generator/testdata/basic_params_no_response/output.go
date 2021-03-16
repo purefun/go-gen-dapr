@@ -1,4 +1,4 @@
-package params_with_response
+package basic_params_no_response
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) ParamsWithResponse(ctx context.Context, a string, b string) (*string, error) {
+func (c *ExampleClient) Method(ctx context.Context, a string, b string) error {
 	content := &client.DataContent{ContentType: "application/json"}
 	params, encErr := json.Marshal([]interface{}{
 		{Name: "a", Value: a},
@@ -32,16 +32,11 @@ func (c *ExampleClient) ParamsWithResponse(ctx context.Context, a string, b stri
 		return nil
 	}
 	content.Data = params
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "ParamsWithResponse", "post", content)
-	var out *string
-	err := json.Unmarshal(resp, out)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	return err
 }
 
-func _Example_ParamsWithResponse_Handler(srv Example) InvocationHandlerFunc {
+func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
@@ -62,17 +57,11 @@ func _Example_ParamsWithResponse_Handler(srv Example) InvocationHandlerFunc {
 			err = fmt.Errorf(`param "b" type is not "string"`)
 			return
 		}
-		resp, methodErr := srv.ParamsWithResponse(ctx, _a, _b)
+		methodErr := srv.Method(ctx, _a, _b)
 		if methodErr != nil {
 			err = methodErr
 			return
 		}
-		data, encErr := json.Marshal(resp)
-		if encErr != nil {
-			err = encErr
-			return
-		}
-		out.Data = data
 		return
 	}
 }
@@ -80,7 +69,7 @@ func _Example_ParamsWithResponse_Handler(srv Example) InvocationHandlerFunc {
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
 func Register(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("ParamsWithResponse", _Example_ParamsWithResponse_Handler(srv))
+	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {
