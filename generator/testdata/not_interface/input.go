@@ -1,3 +1,3 @@
 package not_interface
 
-type Service struct{}
+type InvalidService struct{}

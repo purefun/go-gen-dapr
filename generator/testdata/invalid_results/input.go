@@ -2,7 +2,7 @@ package no_error_result
 
 import "context"
 
-type Service interface {
+type InvalidService interface {
 	Hello(ctx context.Context)
 	Hello1(ctx context.Context) string
 	Hello2(ctx context.Context) *string

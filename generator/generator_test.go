@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/tools/go/packages"
 )
@@ -22,38 +23,53 @@ func TestGenerator_Generate(t *testing.T) {
 	}{
 		{
 			name: "no service",
-			g:    g("no_service", "Service"),
+			g:    g("no_service", "InvalidService"),
 			path: "./testdata/no_service",
 			err:  ErrServiceNotFound,
 		},
 		{
 			name: "empty service",
-			g:    g("empty_service", "Service"),
+			g:    g("empty_service", "InvalidService"),
 			path: "./testdata/empty_service",
 			err:  ErrEmptyService,
 		},
 		{
 			name: "not an interface",
-			g:    g("not_interface", "Service"),
+			g:    g("not_interface", "InvalidService"),
 			path: "./testdata/not_interface",
 			err:  ErrNotInterface,
 		},
 		{
 			name: "first param should be context.Context",
-			g:    g("no_ctx_param", "Service"),
+			g:    g("no_ctx_param", "InvalidService"),
 			path: "./testdata/no_ctx_param",
 			err:  ErrNoCtxParam,
 		},
 		{
 			name: "invalid results",
-			g:    g("invalid_results", "Service"),
+			g:    g("invalid_results", "InvalidService"),
 			path: "./testdata/invalid_results",
 			err:  ErrInvalidResults,
 		},
 		{
-			name: "example service",
-			g:    g("example_service", "Example"),
-			path: "./testdata/example_service",
+			name: "no param no response",
+			g:    g("no_param_no_response", "Example"),
+			path: "./testdata/no_param_no_response",
+		},
+		{
+			name: "params no response",
+			g:    g("params_no_response", "Example"),
+			path: "./testdata/params_no_response",
+		},
+		{
+			name: "no param with response",
+			g:    g("no_param_with_response", "Example"),
+			path: "./testdata/no_param_with_response",
+		},
+		{
+			name: "params with response",
+			g:    g("params_with_response", "Example"),
+			path: "./testdata/params_with_response",
 		},
 	}
 	for _, tt := range tests {
@@ -78,7 +94,7 @@ func TestGenerator_Generate(t *testing.T) {
 			require.NoError(t, err)
 
 			want := string(outContent)
-			require.Equal(t, want, got)
+			assert.Equal(t, want, got)
 
 		})
 	}

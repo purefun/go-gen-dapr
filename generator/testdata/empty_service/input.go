@@ -1,3 +1,3 @@
 package empty_service
 
-type Service interface{}
+type InvalidService interface{}
