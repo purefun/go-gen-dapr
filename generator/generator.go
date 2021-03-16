@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/format"
 	"go/types"
+	"path/filepath"
 	"strings"
 
 	"github.com/purefun/go-gen-dapr/generator/box"
@@ -193,7 +194,9 @@ func (g *Generator) typeName(t types.Type) string {
 		pkg := p.Path()
 		if pkg != g.ServicePkg {
 			g.AddImport(p.Path(), "")
+			return filepath.Base(pkg)
 		}
+
 		return ""
 	})
 }

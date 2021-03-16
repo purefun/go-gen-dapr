@@ -72,6 +72,11 @@ func TestGenerator_Generate(t *testing.T) {
 			iface: "Example",
 			path:  "./testdata/struct_params_with_struct_response",
 		},
+		{
+			name:  "external types",
+			iface: "Example",
+			path:  "./testdata/external_types",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
