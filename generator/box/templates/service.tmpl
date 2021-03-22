@@ -30,6 +30,9 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
     if err != nil {
         return nil, err
     }
+    if string(resp) == "null" {
+      return nil, nil
+    }
     var out {{trimPrefix .Response.Type "*"}}
     err = json.Unmarshal(resp, &out)
     if err != nil {

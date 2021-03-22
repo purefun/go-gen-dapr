@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.1.0"
+const Version = "v0.1.1"
 
 var LoadMode = packages.NeedName |
 	packages.NeedFiles |

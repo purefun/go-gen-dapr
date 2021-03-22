@@ -27,6 +27,9 @@ func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if string(resp) == "null" {
+		return nil, nil
+	}
 	var out string
 	err = json.Unmarshal(resp, &out)
 	if err != nil {

@@ -35,6 +35,9 @@ func (c *ExampleClient) Method(ctx context.Context, a Input, b *Input) (*Output,
 	if err != nil {
 		return nil, err
 	}
+	if string(resp) == "null" {
+		return nil, nil
+	}
 	var out Output
 	err = json.Unmarshal(resp, &out)
 	if err != nil {

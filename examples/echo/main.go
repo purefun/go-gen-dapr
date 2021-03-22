@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// dapr run -H 3500 -a echo_server -p 6000 -P grpc -- go run . --server
+// dapr run -a echo_server -p 6000 -P grpc -- go run . -server
 // dapr run -a client -p 6000 -P grpc -- go run . -client
 
 func main() {
