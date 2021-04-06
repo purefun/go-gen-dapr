@@ -3,7 +3,6 @@ package external_types
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/purefun/go-gen-dapr/generator/testdata/subscriptions"
 )
@@ -13,7 +12,7 @@ type TopicHandlerFunc func(ctx context.Context, e *common.TopicEvent) (retry boo
 func _SendActivationEmail_Handler(subs Subscriptions) TopicHandlerFunc {
 	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		var event subscriptions.UserRegisteredEvent
-		err = json.Unmarshal([]byte(fmt.Sprintf("%v", e.Data.(interface{}))), &event)
+		err = json.Unmarshal(e.Data.([]byte), &event)
 		if err != nil {
 			return false, err
 		}

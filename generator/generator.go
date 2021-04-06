@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.2.1"
+const Version = "v0.2.2"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -305,7 +305,6 @@ type Subscription struct {
 func (g *Generator) genSubscriptions() (string, error) {
 	g.AddImport("context", "")
 	g.AddImport("encoding/json", "")
-	g.AddImport("fmt", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 
 	var subs []Subscription
