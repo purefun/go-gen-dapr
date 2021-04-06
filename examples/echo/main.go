@@ -4,6 +4,8 @@ import (
 	"context"
 	"flag"
 	"fmt"
+
+	"github.com/purefun/go-gen-dapr/examples/echo/service"
 )
 
 // dapr run -a echo_server -p 6000 -P grpc -- go run . -server
@@ -27,20 +29,20 @@ func main() {
 }
 
 func NewClient() {
-	echo, _ := NewServiceClient("echo_server")
+	echo, _ := service.NewServiceClient("echo_server")
 	resp1, err := echo.Echo(context.Background())
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("echo.Echo returns:", *resp1)
 
-	resp2, err := echo.Hello(context.Background(), Message{Text: "Hello"})
+	resp2, err := echo.Hello(context.Background(), service.Message{Text: "Hello"})
 	fmt.Println("echo.Hello returns:", resp2.Text)
 }
 
 func NewServer() {
 	h := new(Handlers)
-	s, err := NewServiceServer(":6000", h)
+	s, err := service.NewServiceServer(":6000", h)
 	if err != nil {
 		panic(err)
 	}
@@ -50,8 +52,8 @@ func NewServer() {
 type Handlers struct {
 }
 
-func (h *Handlers) Hello(ctx context.Context, in Message) (*Message, error) {
-	return &Message{Text: in.Text + " world!"}, nil
+func (h *Handlers) Hello(ctx context.Context, in service.Message) (*service.Message, error) {
+	return &service.Message{Text: in.Text + " world!"}, nil
 }
 
 func (h *Handlers) Echo(ctx context.Context) (*string, error) {

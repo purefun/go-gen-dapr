@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestGenerator_Generate(t *testing.T) {
+func TestGenerator(t *testing.T) {
 	tests := []struct {
 		name    string
 		iface   string
@@ -55,10 +55,11 @@ func TestGenerator_Generate(t *testing.T) {
 			err:     ErrNoCtxParam,
 		},
 		{
-			name:  "invalid results",
-			iface: "InvalidService",
-			path:  "./testdata/services/invalid_results",
-			err:   ErrInvalidResults,
+			name:    "invalid results",
+			iface:   "InvalidService",
+			path:    "./testdata/services/invalid_results",
+			genType: GenerateTypeService,
+			err:     ErrInvalidResults,
 		},
 		{
 			name:    "no param no response",
@@ -95,6 +96,12 @@ func TestGenerator_Generate(t *testing.T) {
 			iface:   "Example",
 			genType: GenerateTypeService,
 			path:    "./testdata/services/external_types",
+		},
+		{
+			name:    "subscriptions",
+			iface:   "Subscriptions",
+			genType: GenerateTypeSubscriptions,
+			path:    "./testdata/subscriptions/basic",
 		},
 	}
 	for _, tt := range tests {

@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"go/ast"
 	"go/format"
-	"regexp"
 	"strings"
 
 	"github.com/purefun/go-gen-dapr/generator/box"
 )
 
 var (
+	ErrEventNotFound    = errors.New("event not found")
 	ErrEventDocNotFound = errors.New("event doc not found")
-	ErrTopicNotFound    = errors.New("event topic not found")
 )
 
 type Event struct {
@@ -52,14 +51,6 @@ func GeneratePublishEvents(o PublishEventsOptions) (string, error) {
 		return "", nil
 	}
 
-	// for _, name := range pkg.Types.Scope().Names() {
-	// if strings.HasSuffix(name, "Event") {
-	// 	eventType := pkg.Types.Scope().Lookup(name)
-	// }
-	// }
-
-	re := regexp.MustCompile(`topic:(\w+)`)
-
 	var events []Event
 
 	for _, f := range pkg.Syntax {
@@ -72,21 +63,16 @@ func GeneratePublishEvents(o PublishEventsOptions) (string, error) {
 							if typeSpec.Doc == nil && len(genDecl.Specs) > 1 {
 								return "", fmt.Errorf("%w, event: %s", ErrEventDocNotFound, name)
 							}
-							doc := typeSpec.Doc
-							if doc == nil {
-								doc = genDecl.Doc
-							}
-							match := re.FindStringSubmatch(doc.Text())
-							if len(match) != 2 {
-								return "", fmt.Errorf("%w, event: %s", ErrTopicNotFound, name)
-							}
-							topic := match[1]
-							events = append(events, Event{Name: name, Topic: topic})
+							events = append(events, Event{Name: name, Topic: name})
 						}
 					}
 				}
 			}
 		}
+	}
+
+	if len(events) == 0 {
+		return "", ErrEventNotFound
 	}
 
 	data := struct{ Events []Event }{

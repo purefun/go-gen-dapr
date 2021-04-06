@@ -9,14 +9,7 @@ func NewPubsub(c client.Client, name string) *Pubsub {
 
 {{range .Events}}
 func (p *Pubsub) Publish{{.Name}}(ctx context.Context, event {{.Name}}) error {
-	Data := struct {
-		EventName string
-		Event     {{.Name}}
-	}{
-		EventName: "{{.Name}}",
-		Event:     event,
-	}
-	data, err := json.Marshal(data)
+	data, err := json.Marshal(event)
 	if err != nil {
 		return err
 	}
