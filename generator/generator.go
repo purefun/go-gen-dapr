@@ -22,17 +22,36 @@ var LoadMode = packages.NeedName |
 	packages.NeedTypesInfo
 
 var (
-	ErrServiceNotFound = errors.New("service not found")
-	ErrEmptyService    = errors.New("empty service")
-	ErrNotInterface    = errors.New("service is not an interface")
-	ErrNoCtxParam      = errors.New(`first param is not "context.Context"`)
-	ErrInvalidResults  = errors.New(`method results are not "error", neither "(*SomeType, error)"`)
+	ErrServiceNotFound     = errors.New("service not found")
+	ErrEmptyService        = errors.New("empty service")
+	ErrNotInterface        = errors.New("service is not an interface")
+	ErrNoCtxParam          = errors.New(`first param is not "context.Context"`)
+	ErrInvalidResults      = errors.New(`method results are not "error", neither "(*SomeType, error)"`)
+	ErrInvalidGenerateType = errors.New("invalid generate type")
 )
 
+type GenerateType string
+
+const (
+	GenerateTypeService       GenerateType = "service"
+	GenerateTypeSubscriptions GenerateType = "subscriptions"
+)
+
+func GenerateTypeFromString(t string) (GenerateType, error) {
+	gt := GenerateType(t)
+	switch gt {
+	case GenerateTypeService, GenerateTypeSubscriptions:
+		return gt, nil
+	default:
+		return GenerateType(""), fmt.Errorf("invalid generate type: %s", t)
+	}
+}
+
 type Options struct {
-	ServicePkg  string
-	ServiceType string
-	GenComment  bool
+	ServicePkg   string
+	ServiceType  string
+	GenComment   bool
+	GenerateType GenerateType
 }
 
 type Id struct {
@@ -42,11 +61,12 @@ type Id struct {
 
 func NewGenerator(o Options) *Generator {
 	return &Generator{
-		Version:     Version,
-		ServicePkg:  o.ServicePkg,
-		ServiceType: o.ServiceType,
-		GenComment:  o.GenComment,
-		Imports:     make(map[string]string),
+		Version:      Version,
+		GenerateType: o.GenerateType,
+		ServicePkg:   o.ServicePkg,
+		ServiceType:  o.ServiceType,
+		GenComment:   o.GenComment,
+		Imports:      make(map[string]string),
 	}
 }
 
@@ -69,6 +89,8 @@ type Generator struct {
 	Version    string
 	SourceType string
 	Package    *packages.Package
+
+	GenerateType GenerateType
 
 	ServicePkg  string
 	ServiceType string
@@ -95,8 +117,19 @@ func (g *Generator) Generate() (string, error) {
 		return "", err
 	}
 
-	serviceOut, err := g.genService()
-	if err != nil {
+	var mainOut string
+	var mainErr error
+
+	switch g.GenerateType {
+	case GenerateTypeService:
+		mainOut, mainErr = g.genService()
+	case GenerateTypeSubscriptions:
+	// TODO mainOut, mainErr = g.Ge
+	default:
+		mainErr = ErrInvalidGenerateType
+	}
+
+	if mainErr != nil {
 		return "", err
 	}
 
@@ -106,7 +139,7 @@ func (g *Generator) Generate() (string, error) {
 		return "", err
 	}
 
-	out := pkgOut + importsOut + serviceOut
+	out := pkgOut + importsOut + mainOut
 
 	formatted, err := format.Source([]byte(out))
 	if err != nil {
