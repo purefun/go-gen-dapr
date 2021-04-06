@@ -3,6 +3,7 @@ package basic
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -11,7 +12,7 @@ type TopicHandlerFunc func(ctx context.Context, e *common.TopicEvent) (retry boo
 func _UserRegisteredEvent_Handler(subs Subscriptions) TopicHandlerFunc {
 	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		var event UserRegisteredEvent
-		err = json.Unmarshal(e.Data, &event)
+		err = json.Unmarshal([]byte(fmt.Sprintf("%v", e.Data.(interface{}))), &event)
 		if err != nil {
 			return false, err
 		}
