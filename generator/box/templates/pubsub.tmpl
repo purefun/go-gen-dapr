@@ -1,0 +1,25 @@
+type Pubsub struct {
+	client     client.Client
+	pubsubName string
+}
+
+func NewPubsub(c client.Client, name string) *Pubsub {
+	return &Pubsub{client: c, pubsubName: name}
+}
+
+{{range .Events}}
+func (p *Pubsub) Publish{{.Name}}(ctx context.Context, event {{.Name}}) error {
+	Data := struct {
+		EventName string
+		Event     {{.Name}}
+	}{
+		EventName: "{{.Name}}",
+		Event:     event,
+	}
+	data, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return p.client.PublishEvent(ctx, p.pubsubName, "{{.Topic}}", data)
+}
+{{end}}

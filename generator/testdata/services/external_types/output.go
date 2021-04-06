@@ -6,7 +6,7 @@ import (
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"
-	"github.com/purefun/go-gen-dapr/generator/testdata"
+	"github.com/purefun/go-gen-dapr/generator/testdata/services"
 )
 
 type ExampleClient struct {
@@ -22,7 +22,7 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) Method(ctx context.Context, a testdata.Input, b *testdata.Input) (*testdata.Output, error) {
+func (c *ExampleClient) Method(ctx context.Context, a services.Input, b *services.Input) (*services.Output, error) {
 	content := &client.DataContent{ContentType: "application/json"}
 	params, encErr := json.Marshal(map[string]interface{}{
 		"a": a,
@@ -39,7 +39,7 @@ func (c *ExampleClient) Method(ctx context.Context, a testdata.Input, b *testdat
 	if string(resp) == "null" {
 		return nil, nil
 	}
-	var out testdata.Output
+	var out services.Output
 	err = json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 			ContentType: "application/json",
 		}
 		type Params struct {
-			A testdata.Input
-			B *testdata.Input
+			A services.Input
+			B *services.Input
 		}
 		var params Params
 		decErr := json.Unmarshal(in.Data, &params)

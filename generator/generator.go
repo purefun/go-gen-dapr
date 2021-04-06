@@ -12,14 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.1.1"
-
-var LoadMode = packages.NeedName |
-	packages.NeedFiles |
-	packages.NeedImports |
-	packages.NeedTypes |
-	packages.NeedSyntax |
-	packages.NeedTypesInfo
+const Version = "v0.2.0"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -102,10 +95,12 @@ type Generator struct {
 }
 
 func (g *Generator) Generate() (string, error) {
-	err := g.LoadSource()
+	pkg, err := LoadSource(g.ServicePkg)
 	if err != nil {
 		return "", nil
 	}
+	g.Package = pkg
+	g.PackageName = pkg.Name
 
 	err = g.Build()
 	if err != nil {
@@ -147,18 +142,6 @@ func (g *Generator) Generate() (string, error) {
 	}
 
 	return string(formatted), nil
-}
-
-func (g *Generator) LoadSource() error {
-	pkgs, err := packages.Load(&packages.Config{Mode: LoadMode}, g.ServicePkg)
-	if err != nil {
-		return err
-	}
-	pkg := pkgs[0]
-	g.Package = pkg
-	g.PackageName = pkg.Name
-
-	return nil
 }
 
 func (g *Generator) Build() error {
@@ -262,19 +245,16 @@ func (g *Generator) AddImport(pkg, alias string) {
 }
 
 func (g *Generator) genPackage() (string, error) {
-	out, err := box.Template.Execute("package.tmpl", g)
-	if err != nil {
-		return "", err
-	}
-	return string(out), nil
+	return GenPackage(GenPackageData{
+		PackageName: g.PackageName,
+		GenComment:  g.GenComment,
+		Version:     g.Version,
+		SourceType:  g.SourceType,
+	})
 }
 
 func (g *Generator) genImports() (string, error) {
-	out, err := box.Template.Execute("imports.tmpl", g)
-	if err != nil {
-		return "", err
-	}
-	return string(out), nil
+	return GenImports(GenImportsData{Imports: g.Imports})
 }
 
 func (g *Generator) genService() (string, error) {
