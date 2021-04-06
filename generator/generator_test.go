@@ -98,10 +98,16 @@ func TestGenerator(t *testing.T) {
 			path:    "./testdata/services/external_types",
 		},
 		{
-			name:    "subscriptions",
+			name:    "subscriptions basic",
 			iface:   "Subscriptions",
 			genType: GenerateTypeSubscriptions,
 			path:    "./testdata/subscriptions/basic",
+		},
+		{
+			name:    "subscriptions external types",
+			iface:   "Subscriptions",
+			genType: GenerateTypeSubscriptions,
+			path:    "./testdata/subscriptions/external_types",
 		},
 	}
 	for _, tt := range tests {

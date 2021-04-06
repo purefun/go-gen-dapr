@@ -7,10 +7,11 @@ import (
 )
 
 var funcs = template.FuncMap{
-	"upper":       upper,
-	"upperFirst":  upperFirst,
-	"prefixLines": prefixLines,
-	"trimPrefix":  strings.TrimPrefix,
+	"upper":           upper,
+	"upperFirst":      upperFirst,
+	"prefixLines":     prefixLines,
+	"trimPrefix":      strings.TrimPrefix,
+	"trimPackageName": trimPackageName,
 }
 
 func upper(s string) string {
@@ -28,4 +29,9 @@ func prefixLines(prefix, s string) string {
 		return ""
 	}
 	return prefix + strings.Replace(s, "\n", "\n"+prefix, -1)
+}
+
+func trimPackageName(typeName string) string {
+	splitted := strings.Split(typeName, ".")
+	return splitted[len(splitted)-1]
 }
