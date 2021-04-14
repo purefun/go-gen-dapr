@@ -20,7 +20,7 @@ func _SendActivationEmail_Handler(subscriber Subscriptions) TopicHandlerFunc {
 	}
 }
 
-func RegisterTopicHandlers(s common.Service, subscriber Subscriptions, pubsubName string) {
+func RegisterSubscriber(s common.Service, subscriber Subscriptions, pubsubName string) {
 	s.AddTopicEventHandler(
 		&common.Subscription{
 			PubsubName: pubsubName,

@@ -13,7 +13,7 @@ func _{{.HandlerName}}_Handler(subscriber {{$.ServiceType}}) TopicHandlerFunc {
 }
 {{end}}
 
-func RegisterTopicHandlers(s common.Service, subscriber {{.ServiceType}}, pubsubName string) {
+func RegisterSubscriber(s common.Service, subscriber {{.ServiceType}}, pubsubName string) {
     {{- range .Handlers}}
 	s.AddTopicEventHandler(
 		&common.Subscription{
