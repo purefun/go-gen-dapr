@@ -117,7 +117,7 @@ func _Service_Hello_Handler(srv Service) InvocationHandlerFunc {
 
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
-func Register(s common.Service, srv Service) {
+func RegisterService(s common.Service, srv Service) {
 	s.AddServiceInvocationHandler("Echo", _Service_Echo_Handler(srv))
 	s.AddServiceInvocationHandler("Hello", _Service_Hello_Handler(srv))
 }
@@ -127,7 +127,5 @@ func NewServiceServer(address string, srv Service) (common.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	Register(s, srv)
-
 	return s, nil
 }

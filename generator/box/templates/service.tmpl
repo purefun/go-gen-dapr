@@ -83,7 +83,7 @@ func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) InvocationHandl
 
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
-func Register(s common.Service, srv {{.ServiceType}}) {
+func RegisterService(s common.Service, srv {{.ServiceType}}) {
 {{- range .Methods}}
 	s.AddServiceInvocationHandler("{{.Name}}", _{{$.ServiceType}}_{{.Name}}_Handler(srv))
 {{- end}}
@@ -94,7 +94,5 @@ func New{{.ServiceType}}Server(address string, srv {{.ServiceType}}) (common.Ser
 	if err != nil {
 		return nil, err
 	}
-	Register(s, srv)
-
 	return s, nil
 }

@@ -60,7 +60,7 @@ func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 
 type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 
-func Register(s common.Service, srv Example) {
+func RegisterService(s common.Service, srv Example) {
 	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
 }
 
@@ -69,7 +69,5 @@ func NewExampleServer(address string, srv Example) (common.Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	Register(s, srv)
-
 	return s, nil
 }
