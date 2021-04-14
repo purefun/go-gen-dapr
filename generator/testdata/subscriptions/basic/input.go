@@ -6,6 +6,6 @@ type UserRegisteredEvent struct {
 	Email string
 }
 
-type Subscriptions interface {
+type Subscriber interface {
 	SendActivationEmail(ctx context.Context, event UserRegisteredEvent) (bool, error)
 }

@@ -19,7 +19,7 @@ var (
 
 	target      string
 	targetValue = "service"
-	targetUsage = "service, pubsub, subscriptions"
+	targetUsage = "service, pubsub, subscriber"
 )
 
 func usage() {
@@ -46,7 +46,7 @@ func Execute() {
 			Pkg:        pkg,
 			GenComment: true,
 		})
-	case "service", "subscriptions":
+	case "service", "subscriber":
 		args := flag.Args()
 		if len(args) == 0 {
 			fmt.Println("go-gen-dapr SomeInterfaceName")
@@ -54,8 +54,8 @@ func Execute() {
 			os.Exit(1)
 		}
 		generateType := generator.GenerateTypeService
-		if target == "subscriptions" {
-			generateType = generator.GenerateTypeSubscriptions
+		if target == "subscriber" {
+			generateType = generator.GenerateTypeSubscriber
 		}
 		g := generator.NewGenerator(generator.Options{
 			ServicePkg:   pkg,

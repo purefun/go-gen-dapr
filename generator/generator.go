@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.2.2"
+const Version = "v0.2.3"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -26,14 +26,14 @@ var (
 type GenerateType string
 
 const (
-	GenerateTypeService       GenerateType = "service"
-	GenerateTypeSubscriptions GenerateType = "subscriptions"
+	GenerateTypeService    GenerateType = "service"
+	GenerateTypeSubscriber GenerateType = "subscriber"
 )
 
 func GenerateTypeFromString(t string) (GenerateType, error) {
 	gt := GenerateType(t)
 	switch gt {
-	case GenerateTypeService, GenerateTypeSubscriptions:
+	case GenerateTypeService, GenerateTypeSubscriber:
 		return gt, nil
 	default:
 		return GenerateType(""), fmt.Errorf("invalid generate type: %s", t)
@@ -119,8 +119,8 @@ func (g *Generator) Generate() (string, error) {
 	switch g.GenerateType {
 	case GenerateTypeService:
 		mainOut, err = g.genService()
-	case GenerateTypeSubscriptions:
-		mainOut, err = g.genSubscriptions()
+	case GenerateTypeSubscriber:
+		mainOut, err = g.genSubscriber()
 	default:
 		err = ErrInvalidGenerateType
 	}
@@ -297,27 +297,33 @@ func (g *Generator) genService() (string, error) {
 	return string(out), nil
 }
 
-type Subscription struct {
+type Subscriber struct {
 	EventName   string
 	HandlerName string
 }
 
-func (g *Generator) genSubscriptions() (string, error) {
+func (g *Generator) genSubscriber() (string, error) {
 	g.AddImport("context", "")
 	g.AddImport("encoding/json", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 
-	var subs []Subscription
+	var subs []Subscriber
 	for _, m := range g.Methods {
-		subs = append(subs, Subscription{
+		subs = append(subs, Subscriber{
 			HandlerName: m.Name,
 			EventName:   m.Params[1].Type,
 		})
 	}
 
-	data := struct{ Handlers []Subscription }{
-		Handlers: subs,
+	type Data struct {
+		Handlers    []Subscriber
+		ServiceType string
 	}
 
-	return box.Template.Execute("subscriptions.tmpl", data)
+	data := Data{
+		Handlers:    subs,
+		ServiceType: g.ServiceType,
+	}
+
+	return box.Template.Execute("subscriber.tmpl", data)
 }

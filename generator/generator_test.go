@@ -99,14 +99,14 @@ func TestGenerator(t *testing.T) {
 		},
 		{
 			name:    "subscriptions basic",
-			iface:   "Subscriptions",
-			genType: GenerateTypeSubscriptions,
+			iface:   "Subscriber",
+			genType: GenerateTypeSubscriber,
 			path:    "./testdata/subscriptions/basic",
 		},
 		{
 			name:    "subscriptions external types",
 			iface:   "Subscriptions",
-			genType: GenerateTypeSubscriptions,
+			genType: GenerateTypeSubscriber,
 			path:    "./testdata/subscriptions/external_types",
 		},
 	}

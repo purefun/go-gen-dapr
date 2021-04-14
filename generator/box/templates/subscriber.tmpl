@@ -1,26 +1,26 @@
 type TopicHandlerFunc func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)
 
 {{range .Handlers}}
-func _{{.HandlerName}}_Handler(subs Subscriptions) TopicHandlerFunc {
+func _{{.HandlerName}}_Handler(subscriber {{$.ServiceType}}) TopicHandlerFunc {
 	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		var event {{.EventName}}
 		err = json.Unmarshal(e.Data.([]byte), &event)
 		if err != nil {
 			return false, err
 		}
-		return subs.{{.HandlerName}}(ctx, event)
+		return subscriber.{{.HandlerName}}(ctx, event)
 	}
 }
 {{end}}
 
-func RegisterTopicHandlers(s common.Service, subs Subscriptions, pubsubName string) {
+func RegisterTopicHandlers(s common.Service, subscriber {{.ServiceType}}, pubsubName string) {
     {{- range .Handlers}}
 	s.AddTopicEventHandler(
 		&common.Subscription{
 			PubsubName: pubsubName,
 			Topic:      "{{trimPackageName .EventName}}",
 		},
-		_{{.HandlerName}}_Handler(subs),
+		_{{.HandlerName}}_Handler(subscriber),
 	)
     {{- end}}
 }
