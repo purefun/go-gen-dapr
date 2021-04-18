@@ -21,14 +21,14 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
         {{- end}}
 	})
 	if encErr != nil {
-      return {{if .Response}}nil ,{{end}}encErr
+      return {{if .Response}}nil ,{{end}}errors.WithStack(encErr)
 	}
 	content.Data = params
     {{- end}}
     {{- if .Response}}
     resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
     if err != nil {
-        return nil, err
+        return nil, errors.WithStack(err)
     }
     if string(resp) == "null" {
       return nil, nil
@@ -36,12 +36,12 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
     var out {{trimPrefix .Response.Type "*"}}
     err = json.Unmarshal(resp, &out)
     if err != nil {
-        return nil, err
+        return nil, errors.WithStack(err)
     }
     return &out, nil
     {{- else}}
     _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
-    return err
+    return errors.WithStack(err)
     {{- end}}
 }
 
@@ -59,19 +59,19 @@ func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) dapr.Invocation
         var params Params
         decErr := json.Unmarshal(in.Data, &params)
         if decErr != nil {
-            err = decErr
+            err = errors.WithStack(decErr)
             return
         }
         {{- end}}
 		{{if .Response}}resp, {{end}}methodErr := srv.{{.Name}}(ctx{{range .Params}}, params.{{upperFirst .Name}}{{end}})
         if methodErr != nil {
-            err = methodErr
+            err = errors.WithStack(methodErr)
             return
         }
         {{- if .Response}}
         data, encErr := json.Marshal(resp)
         if encErr != nil {
-            err = encErr
+            err = errors.WithStack(encErr)
             return
         }
         out.Data = data
@@ -83,14 +83,14 @@ func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) dapr.Invocation
 
 func RegisterService(s common.Service, srv {{.ServiceType}}) {
 {{- range .Methods}}
-	s.AddServiceInvocationHandler("{{.Name}}", errors.ServiceErrorHandler(_{{$.ServiceType}}_{{.Name}}_Handler(srv)))
+	s.AddServiceInvocationHandler("{{.Name}}", errorHandlers.ServiceErrorHandler(_{{$.ServiceType}}_{{.Name}}_Handler(srv)))
 {{- end}}
 }
 
 func New{{.ServiceType}}Server(address string, srv {{.ServiceType}}) (common.Service, error) {
 	s, err := grpc.NewService(address)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return s, nil
 }
