@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.4.0"
+const Version = "v0.5.0"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -289,6 +289,8 @@ func (g *Generator) genService() (string, error) {
 	g.AddImport("github.com/dapr/go-sdk/client", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 	g.AddImport("github.com/dapr/go-sdk/service/grpc", "")
+	g.AddImport("github.com/purefun/go-gen-dapr/pkg/errors", "")
+	g.AddImport("github.com/purefun/go-gen-dapr/pkg/dapr", "")
 
 	out, err := box.Template.Execute("service.tmpl", g)
 	if err != nil {

@@ -6,6 +6,8 @@ import (
 	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/grpc"
+	"github.com/purefun/go-gen-dapr/pkg/dapr"
+	"github.com/purefun/go-gen-dapr/pkg/errors"
 )
 
 type ExampleClient struct {
@@ -27,7 +29,7 @@ func (c *ExampleClient) Method(ctx context.Context) error {
 	return err
 }
 
-func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
+func _Example_Method_Handler(srv Example) dapr.InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
@@ -41,10 +43,8 @@ func _Example_Method_Handler(srv Example) InvocationHandlerFunc {
 	}
 }
 
-type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
-
 func RegisterService(s common.Service, srv Example) {
-	s.AddServiceInvocationHandler("Method", _Example_Method_Handler(srv))
+	s.AddServiceInvocationHandler("Method", errors.ServiceErrorHandler(_Example_Method_Handler(srv)))
 }
 
 func NewExampleServer(address string, srv Example) (common.Service, error) {

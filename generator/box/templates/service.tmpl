@@ -45,7 +45,7 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
     {{- end}}
 }
 
-func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) InvocationHandlerFunc {
+func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) dapr.InvocationHandlerFunc {
 	return func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		out = &common.Content{
 			ContentType: "application/json",
@@ -81,11 +81,9 @@ func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) InvocationHandl
 }
 {{end}}
 
-type InvocationHandlerFunc func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
-
 func RegisterService(s common.Service, srv {{.ServiceType}}) {
 {{- range .Methods}}
-	s.AddServiceInvocationHandler("{{.Name}}", _{{$.ServiceType}}_{{.Name}}_Handler(srv))
+	s.AddServiceInvocationHandler("{{.Name}}", errors.ServiceErrorHandler(_{{$.ServiceType}}_{{.Name}}_Handler(srv)))
 {{- end}}
 }
 
