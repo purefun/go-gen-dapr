@@ -1,7 +1,5 @@
-type TopicHandlerFunc func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)
-
 {{range .Handlers}}
-func _{{.HandlerName}}_Handler(subscriber {{$.ServiceType}}) TopicHandlerFunc {
+func _{{.HandlerName}}_Handler(subscriber {{$.ServiceType}}) dapr.TopicHandlerFunc {
 	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		var event {{.EventName}}
 		err = json.Unmarshal(e.Data.([]byte), &event)
@@ -20,7 +18,7 @@ func RegisterSubscriber(s common.Service, subscriber {{.ServiceType}}, pubsubNam
 			PubsubName: pubsubName,
 			Topic:      "{{trimPackageName .EventName}}",
 		},
-		_{{.HandlerName}}_Handler(subscriber),
+		errorHandlers.SubscriberErrorHandler(_{{.HandlerName}}_Handler(subscriber)),
 	)
     {{- end}}
 }

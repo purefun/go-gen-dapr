@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/purefun/go-gen-dapr/pkg/dapr"
+	errorHandlers "github.com/purefun/go-gen-dapr/pkg/errors"
 )
 
-type TopicHandlerFunc func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)
-
-func _SendActivationEmail_Handler(subscriber Subscriber) TopicHandlerFunc {
+func _SendActivationEmail_Handler(subscriber Subscriber) dapr.TopicHandlerFunc {
 	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		var event UserRegisteredEvent
 		err = json.Unmarshal(e.Data.([]byte), &event)
@@ -25,6 +25,6 @@ func RegisterSubscriber(s common.Service, subscriber Subscriber, pubsubName stri
 			PubsubName: pubsubName,
 			Topic:      "UserRegisteredEvent",
 		},
-		_SendActivationEmail_Handler(subscriber),
+		errorHandlers.SubscriberErrorHandler(_SendActivationEmail_Handler(subscriber)),
 	)
 }

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.5.1"
+const Version = "v0.6.0"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -308,7 +308,9 @@ type Subscriber struct {
 func (g *Generator) genSubscriber() (string, error) {
 	g.AddImport("context", "")
 	g.AddImport("encoding/json", "")
+	g.AddImport("github.com/purefun/go-gen-dapr/pkg/dapr", "")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
+	g.AddImport("github.com/purefun/go-gen-dapr/pkg/errors", "errorHandlers")
 
 	var subs []Subscriber
 	for _, m := range g.Methods {

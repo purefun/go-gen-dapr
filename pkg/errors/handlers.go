@@ -2,7 +2,7 @@ package errors
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/pkg/errors"
@@ -18,14 +18,30 @@ func ServiceErrorHandler(handler dapr.InvocationHandlerFunc) dapr.InvocationHand
 		out, err = handler(ctx, in)
 
 		if err != nil {
-			fmt.Println("Error:", err)
+			log.Println("service handler error:", err)
 			if tracker, ok := err.(stackTracker); ok {
 				for _, f := range tracker.StackTrace() {
-					fmt.Printf("%+s:%d\n", f, f)
+					log.Printf("%+s:%d\n", f, f)
 				}
 			}
 		}
 
+		return
+	}
+}
+
+func SubscriberErrorHandler(handler dapr.TopicHandlerFunc) dapr.TopicHandlerFunc {
+	return func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		retry, err = handler(ctx, e)
+
+		if err != nil {
+			log.Printf("subscriber topic[%s] handler error: %s\n", e.Topic, err)
+			if tracker, ok := err.(stackTracker); ok {
+				for _, f := range tracker.StackTrace() {
+					log.Printf("%+s:%d\n", f, f)
+				}
+			}
+		}
 		return
 	}
 }
