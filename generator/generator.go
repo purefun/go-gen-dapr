@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.7.2"
+const Version = "v0.7.3"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
