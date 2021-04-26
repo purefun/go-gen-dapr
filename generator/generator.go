@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.6.0"
+const Version = "v0.7.0"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -242,7 +242,10 @@ func (g *Generator) validateServiceResponses() error {
 			}
 		}
 		if l == 2 {
-			if !strings.HasPrefix(method.Responses[0].Type, "*") ||
+			respType := method.Responses[0].Type
+
+			if !strings.HasPrefix(respType, "*") &&
+				!strings.HasPrefix(respType, "[]") ||
 				method.Responses[1].Type != "error" {
 				return err
 			}
@@ -276,17 +279,24 @@ func (g *Generator) genService() (string, error) {
 		return "", err
 	}
 
+	needJSON := false
+
 	// shift ctx param, response
 	for _, m := range g.Methods {
 		m.Params = m.Params[1:]
 		if len(m.Responses) == 2 {
 			m.Response = m.Responses[0]
 		}
+		if len(m.Params) > 0 || m.Response != nil {
+			needJSON = true
+		}
 	}
 
 	g.AddImport("context", "")
-	g.AddImport("encoding/json", "")
-	g.AddImport("github.com/dapr/go-sdk/client", "")
+	if needJSON {
+		g.AddImport("encoding/json", "")
+	}
+	g.AddImport("github.com/dapr/go-sdk/client", "\n")
 	g.AddImport("github.com/dapr/go-sdk/service/common", "")
 	g.AddImport("github.com/dapr/go-sdk/service/grpc", "")
 	g.AddImport("github.com/purefun/go-gen-dapr/pkg/errors", "errorHandlers")

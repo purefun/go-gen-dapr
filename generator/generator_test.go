@@ -92,6 +92,12 @@ func TestGenerator(t *testing.T) {
 			path:    "./testdata/services/struct_params_with_struct_response",
 		},
 		{
+			name:    "slice response",
+			iface:   "Example",
+			genType: GenerateTypeService,
+			path:    "./testdata/services/slice_response",
+		},
+		{
 			name:    "external types",
 			iface:   "Example",
 			genType: GenerateTypeService,

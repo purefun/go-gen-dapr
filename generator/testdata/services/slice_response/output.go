@@ -1,4 +1,4 @@
-package no_param_with_basic_response
+package slice_response
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 	return &ExampleClient{cc, appID}, nil
 }
 
-func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
+func (c *ExampleClient) Method(ctx context.Context) ([]*string, error) {
 	content := &client.DataContent{ContentType: "application/json"}
 	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
 	if err != nil {
@@ -34,7 +34,7 @@ func (c *ExampleClient) Method(ctx context.Context) (*string, error) {
 	if string(resp) == "null" {
 		return nil, nil
 	}
-	var out string
+	var out []*string
 	err = json.Unmarshal(resp, &out)
 	if err != nil {
 		return nil, errors.WithStack(err)
