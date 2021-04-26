@@ -39,7 +39,7 @@ func (c *ExampleClient) Method(ctx context.Context) ([]*string, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return &out, nil
+	return out, nil
 }
 
 func _Example_Method_Handler(srv Example) dapr.InvocationHandlerFunc {

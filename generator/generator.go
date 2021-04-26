@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.7.0"
+const Version = "v0.7.1"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -69,8 +69,9 @@ type Param struct {
 }
 
 type Response struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	IsSlice bool
 }
 
 type Method struct {
@@ -198,9 +199,11 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 	results := sig.Results()
 	for i := 0; i < results.Len(); i++ {
 		result := results.At(i)
+		typeName := g.typeName(result.Type())
 		method.Responses = append(method.Responses, &Response{
-			Name: result.Name(),
-			Type: g.typeName(result.Type()),
+			Name:    result.Name(),
+			Type:    typeName,
+			IsSlice: strings.HasPrefix(typeName, "[]"),
 		})
 	}
 
