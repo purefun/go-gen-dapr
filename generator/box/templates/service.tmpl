@@ -87,7 +87,7 @@ func RegisterService(s common.Service, srv {{.ServiceType}}) {
 {{- end}}
 }
 
-func New{{.ServiceType}}Server(address string, srv {{.ServiceType}}) (common.Service, error) {
+func New{{.ServiceType}}Server(address string) (common.Service, error) {
 	s, err := grpc.NewService(address)
 	if err != nil {
 		return nil, errors.WithStack(err)

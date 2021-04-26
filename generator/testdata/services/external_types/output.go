@@ -85,7 +85,7 @@ func RegisterService(s common.Service, srv Example) {
 	s.AddServiceInvocationHandler("Method", errorHandlers.ServiceErrorHandler(_Example_Method_Handler(srv)))
 }
 
-func NewExampleServer(address string, srv Example) (common.Service, error) {
+func NewExampleServer(address string) (common.Service, error) {
 	s, err := grpc.NewService(address)
 	if err != nil {
 		return nil, errors.WithStack(err)
