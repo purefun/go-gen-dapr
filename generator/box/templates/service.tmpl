@@ -94,3 +94,12 @@ func New{{.ServiceType}}Server(address string) (common.Service, error) {
 	}
 	return s, nil
 }
+
+
+func MustNew{{.ServiceType}}Server(address string) (common.Service) {
+    svc, err := New{{.ServiceType}}Server(address)
+    if err != nil {
+      panic(err)
+    }
+    return svc
+}

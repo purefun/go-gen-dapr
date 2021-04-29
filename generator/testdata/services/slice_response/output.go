@@ -73,3 +73,11 @@ func NewExampleServer(address string) (common.Service, error) {
 	}
 	return s, nil
 }
+
+func MustNewExampleServer(address string) common.Service {
+	svc, err := NewExampleServer(address)
+	if err != nil {
+		panic(err)
+	}
+	return svc
+}
