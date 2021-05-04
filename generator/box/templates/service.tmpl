@@ -12,7 +12,7 @@ func New{{.ServiceType}}Client(appID string) (*{{.ServiceType}}Client, error) {
 }
 
 {{range .Methods}}
-func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params}}{{.Name}} {{.Type}},{{end}}) ({{if .Response}}{{.Response.Type}},{{end}}error) {
+func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params}}{{.Name}} {{.SigType}},{{end}}) ({{if .Response}}{{.Response.Type}},{{end}}error) {
     content := &client.DataContent{ContentType: "application/json"}
     {{- if .Params}}
 	params, encErr := json.Marshal(map[string]interface{}{
@@ -63,7 +63,7 @@ func _{{$.ServiceType}}_{{.Name}}_Handler(srv {{$.ServiceType}}) dapr.Invocation
             return
         }
         {{- end}}
-		{{if .Response}}resp, {{end}}methodErr := srv.{{.Name}}(ctx{{range .Params}}, params.{{upperFirst .Name}}{{end}})
+		{{if .Response}}resp, {{end}}methodErr := srv.{{.Name}}(ctx{{range .Params}}, params.{{upperFirst .Name}}{{end}}{{if .Variadic}}...{{end}})
         if methodErr != nil {
             err = errors.WithStack(methodErr)
             return

@@ -104,6 +104,12 @@ func TestGenerator(t *testing.T) {
 			path:    "./testdata/services/external_types",
 		},
 		{
+			name:    "variadic",
+			iface:   "Example",
+			genType: GenerateTypeService,
+			path:    "./testdata/services/variadic",
+		},
+		{
 			name:    "subscriptions basic",
 			iface:   "Subscriber",
 			genType: GenerateTypeSubscriber,

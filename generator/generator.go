@@ -12,7 +12,7 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.7.4"
+const Version = "v0.8.0"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
@@ -64,8 +64,9 @@ func NewGenerator(o Options) *Generator {
 }
 
 type Param struct {
-	Name string
-	Type string
+	Name    string
+	Type    string
+	SigType string
 }
 
 type Response struct {
@@ -75,10 +76,12 @@ type Response struct {
 }
 
 type Method struct {
-	Name      string
-	Params    []*Param
-	Responses []*Response
-	Response  *Response
+	Name         string
+	Params       []*Param
+	Responses    []*Response
+	Response     *Response
+	Variadic     bool
+	VariadicType string
 }
 
 type Generator struct {
@@ -184,16 +187,24 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 		return nil
 	}
 
-	method := &Method{Name: name}
 	sig, _ := m.Type().(*types.Signature)
+
+	method := &Method{Name: name, Variadic: sig.Variadic()}
 
 	params := sig.Params()
 	for i := 0; i < params.Len(); i++ {
 		p := params.At(i)
+		t := g.typeName(p.Type())
+		st := t
+		if i == params.Len()-1 && sig.Variadic() {
+			st = strings.ReplaceAll(t, "[]", "...")
+		}
 		method.Params = append(method.Params, &Param{
-			Name: p.Name(),
-			Type: g.typeName(p.Type()),
+			Name:    p.Name(),
+			Type:    t,
+			SigType: st,
 		})
+
 	}
 
 	results := sig.Results()
