@@ -110,6 +110,12 @@ func TestGenerator(t *testing.T) {
 			path:    "./testdata/services/variadic",
 		},
 		{
+			name:    "interface{} response",
+			iface:   "Example",
+			genType: GenerateTypeService,
+			path:    "./testdata/services/interface_response",
+		},
+		{
 			name:    "subscriptions basic",
 			iface:   "Subscriber",
 			genType: GenerateTypeSubscriber,

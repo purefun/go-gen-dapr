@@ -12,14 +12,14 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-const Version = "v0.8.0"
+const Version = "v0.8.1"
 
 var (
 	ErrServiceNotFound     = errors.New("service not found")
 	ErrEmptyService        = errors.New("empty service")
 	ErrNotInterface        = errors.New("service is not an interface")
 	ErrNoCtxParam          = errors.New(`first param is not "context.Context"`)
-	ErrInvalidResults      = errors.New(`method results are not "error", neither "(*SomeType, error)"`)
+	ErrInvalidResults      = errors.New(`method results are not "error", neither "(SomeType, error)"`)
 	ErrInvalidGenerateType = errors.New("invalid generate type")
 )
 
@@ -70,9 +70,9 @@ type Param struct {
 }
 
 type Response struct {
-	Name    string
-	Type    string
-	IsSlice bool
+	Name string
+	Type string
+	Ptr  bool
 }
 
 type Method struct {
@@ -150,9 +150,7 @@ func (g *Generator) Generate() (string, error) {
 }
 
 func (g *Generator) Build() error {
-	var s types.Object
-
-	s = g.Package.Types.Scope().Lookup(g.ServiceType)
+	var s = g.Package.Types.Scope().Lookup(g.ServiceType)
 
 	if s == nil {
 		return fmt.Errorf("%w, name: %s", ErrServiceNotFound, g.ServiceType)
@@ -212,9 +210,9 @@ func (g *Generator) BuildMethod(m *types.Func) error {
 		result := results.At(i)
 		typeName := g.typeName(result.Type())
 		method.Responses = append(method.Responses, &Response{
-			Name:    result.Name(),
-			Type:    typeName,
-			IsSlice: strings.HasPrefix(typeName, "[]"),
+			Name: result.Name(),
+			Type: typeName,
+			Ptr:  strings.HasPrefix(typeName, "*"),
 		})
 	}
 
@@ -256,13 +254,15 @@ func (g *Generator) validateServiceResponses() error {
 			}
 		}
 		if l == 2 {
-			respType := method.Responses[0].Type
-
-			if !strings.HasPrefix(respType, "*") &&
-				!strings.HasPrefix(respType, "[]") ||
-				method.Responses[1].Type != "error" {
+			if method.Responses[1].Type != "error" {
 				return err
 			}
+			// respType := method.Responses[0].Type
+
+			// if !strings.HasPrefix(respType, "*") &&
+			// 	!strings.HasPrefix(respType, "[]") {
+			// 	return err
+			// }
 		}
 	}
 	return nil

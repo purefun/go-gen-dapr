@@ -38,7 +38,7 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
     if err != nil {
         return nil, errors.WithStack(err)
     }
-    return {{if not .Response.IsSlice}}&{{end}}out, nil
+    return {{if .Response.Ptr}}&{{end}}out, nil
     {{- else}}
     _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
     return errors.WithStack(err)
