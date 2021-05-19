@@ -46,7 +46,7 @@ func NewClient() {
 
 func NewServer() {
 	h := new(Handlers)
-	s, err := service.NewServiceServer(":6000", h)
+	s, err := service.NewServiceServer(":6000")
 	service.RegisterService(s, h)
 	if err != nil {
 		panic(err)
