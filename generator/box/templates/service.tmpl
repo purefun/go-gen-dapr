@@ -13,7 +13,7 @@ func New{{.ServiceType}}Client(appID string) (*{{.ServiceType}}Client, error) {
 
 {{range .Methods}}
 func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params}}{{.Name}} {{.SigType}},{{end}}) ({{if .Response}}{{.Response.Type}},{{end}}error) {
-    content := &client.DataContent{ContentType: "application/json"}
+    _content := &client.DataContent{ContentType: "application/json"}
     {{- if .Params}}
 	params, encErr := json.Marshal(map[string]interface{}{
         {{- range .Params}}
@@ -23,10 +23,10 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
 	if encErr != nil {
       return {{if .Response}}nil ,{{end}}errors.WithStack(encErr)
 	}
-	content.Data = params
+	_content.Data = params
     {{- end}}
     {{- if .Response}}
-    resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
+    resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", _content)
     if err != nil {
         return nil, errors.WithStack(err)
     }
@@ -40,7 +40,7 @@ func (c *{{$.ServiceType}}Client) {{.Name}}(ctx context.Context, {{range .Params
     }
     return {{if .Response.Ptr}}&{{end}}out, nil
     {{- else}}
-    _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", content)
+    _, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "{{.Name}}", "post", _content)
     return errors.WithStack(err)
     {{- end}}
 }

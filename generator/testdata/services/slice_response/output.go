@@ -26,8 +26,8 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 }
 
 func (c *ExampleClient) Method(ctx context.Context) ([]*string, error) {
-	content := &client.DataContent{ContentType: "application/json"}
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	_content := &client.DataContent{ContentType: "application/json"}
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", _content)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -26,7 +26,7 @@ func NewExampleClient(appID string) (*ExampleClient, error) {
 }
 
 func (c *ExampleClient) Method(ctx context.Context, a string, b string) error {
-	content := &client.DataContent{ContentType: "application/json"}
+	_content := &client.DataContent{ContentType: "application/json"}
 	params, encErr := json.Marshal(map[string]interface{}{
 		"a": a,
 		"b": b,
@@ -34,8 +34,8 @@ func (c *ExampleClient) Method(ctx context.Context, a string, b string) error {
 	if encErr != nil {
 		return errors.WithStack(encErr)
 	}
-	content.Data = params
-	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", content)
+	_content.Data = params
+	_, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Method", "post", _content)
 	return errors.WithStack(err)
 }
 

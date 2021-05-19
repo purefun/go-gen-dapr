@@ -30,8 +30,8 @@ func NewServiceClient(appID string) (*ServiceClient, error) {
 }
 
 func (c *ServiceClient) Echo(ctx context.Context) (*string, error) {
-	content := &client.DataContent{ContentType: "application/json"}
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Echo", "post", content)
+	_content := &client.DataContent{ContentType: "application/json"}
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Echo", "post", _content)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -67,15 +67,15 @@ func _Service_Echo_Handler(srv Service) dapr.InvocationHandlerFunc {
 }
 
 func (c *ServiceClient) Hello(ctx context.Context, in Message) (*Message, error) {
-	content := &client.DataContent{ContentType: "application/json"}
+	_content := &client.DataContent{ContentType: "application/json"}
 	params, encErr := json.Marshal(map[string]interface{}{
 		"in": in,
 	})
 	if encErr != nil {
 		return nil, errors.WithStack(encErr)
 	}
-	content.Data = params
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Hello", "post", content)
+	_content.Data = params
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "Hello", "post", _content)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -120,8 +120,8 @@ func _Service_Hello_Handler(srv Service) dapr.InvocationHandlerFunc {
 }
 
 func (c *ServiceClient) SomethingWrong(ctx context.Context) (*Message, error) {
-	content := &client.DataContent{ContentType: "application/json"}
-	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "SomethingWrong", "post", content)
+	_content := &client.DataContent{ContentType: "application/json"}
+	resp, err := c.cc.InvokeMethodWithContent(ctx, c.appID, "SomethingWrong", "post", _content)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
